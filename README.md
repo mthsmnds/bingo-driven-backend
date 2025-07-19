@@ -1,0 +1,1 @@
+Deploy no Render: https://bingo-driven-backend-qefo.onrender.com
