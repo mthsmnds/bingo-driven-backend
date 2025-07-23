@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres
+    container_name: mypostgres
+    ports:
+      - 5433:5432
+    networks:
+      - mynetwork
+    env_file:
+      - back-end/.env
+    volumes:
+      - myvolume:/var/lib/postgres/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -d postgres -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: mthsmnds/bingo-driven-backend
+    container_name: bing-backend
+    build: back-end/
+    ports:
+      - 5000:5000
+    networks:
+      - mynetwork
+    env_file:
+      - back-end/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    image: mthsmnds/bingo-driven-frontend
+    build: front-end/
+    ports:
+      - 8080:80
+    networks:
+      - mynetwork
+    depends_on:
+      - backend
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: mypgadmin
+    ports:
+      - 15432:5432
+    networks:
+      - mynetwork
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@email.com
+      - PGADMIN_DEFAULT_PASSWORD=postgres
+
+networks:
+  mynetwork:
+    name: mynetwork
+
+volumes:
+  myvolume:
